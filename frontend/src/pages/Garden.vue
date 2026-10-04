@@ -69,8 +69,9 @@ async function remove(id: number) {
   ElMessage.success('已移除')
 }
 async function markDone(id: number) {
-  await updateReminderStatus(id, 'done')
+  const updated = await updateReminderStatus(id, 'done')
   reminders.value = await listReminders()
+  ElMessage.success(updated.next_reminder_id ? '已完成，已生成下一次周期提醒' : '提醒已标记完成')
 }
 async function removeReminder(id: number) {
   await deleteReminder(id)

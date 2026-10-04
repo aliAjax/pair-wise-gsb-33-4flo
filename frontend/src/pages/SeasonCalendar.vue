@@ -56,8 +56,9 @@ async function create() {
   ElMessage.success('养护提醒已创建')
 }
 async function markDone(id: number) {
-  await store.setStatus(id, 'done')
+  const updated = await store.setStatus(id, 'done')
   reminders.value = store.reminders
+  ElMessage.success(updated.next_reminder_id ? '已完成，已生成下一次周期提醒' : '提醒已标记完成')
 }
 async function remove(id: number) {
   const { deleteReminder } = await import('@/api/reminder')

@@ -70,6 +70,7 @@ CREATE TABLE IF NOT EXISTS care_reminders (
   remind_date DATE,
   frequency VARCHAR(32) DEFAULT '',
   status VARCHAR(16) NOT NULL DEFAULT 'pending',
+  next_reminder_id BIGINT UNSIGNED NOT NULL DEFAULT 0,
   created_at DATETIME(3) DEFAULT CURRENT_TIMESTAMP(3),
   KEY idx_reminders_user (user_id),
   KEY idx_reminders_date (remind_date)

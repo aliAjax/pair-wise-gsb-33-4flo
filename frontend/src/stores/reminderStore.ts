@@ -16,8 +16,9 @@ export const useReminderStore = defineStore('reminder', () => {
   }
 
   async function setStatus(id: number, status: string) {
-    await updateReminderStatus(id, status)
+    const updated = await updateReminderStatus(id, status)
     await load()
+    return updated
   }
 
   return { reminders, load, create, setStatus }

@@ -14,13 +14,14 @@ import (
 
 // UserGardenService implements "my garden" list logic.
 type UserGardenService struct {
-	repo   *repository.UserGardenRepository
-	logger *slog.Logger
+	repo         *repository.UserGardenRepository
+	reminderRepo *repository.CareReminderRepository
+	logger       *slog.Logger
 }
 
 // NewUserGardenService creates a UserGardenService.
-func NewUserGardenService(repo *repository.UserGardenRepository, logger *slog.Logger) *UserGardenService {
-	return &UserGardenService{repo: repo, logger: logger}
+func NewUserGardenService(repo *repository.UserGardenRepository, reminderRepo *repository.CareReminderRepository, logger *slog.Logger) *UserGardenService {
+	return &UserGardenService{repo: repo, reminderRepo: reminderRepo, logger: logger}
 }
 
 // Add adds a plant to a user's garden.
@@ -66,14 +67,30 @@ func (s *UserGardenService) Remove(userID, id uint) error {
 	return nil
 }
 
-// BindReminder associates a care reminder with a garden item.
+// BindReminder associates a care reminder with a garden item. Both sides must
+// belong to the current user: a reminder or a garden item owned by someone
+// else can never be bound.
 func (s *UserGardenService) BindReminder(userID, gardenID, reminderID uint) (*model.UserGarden, error) {
 	item, err := s.repo.FindByID(gardenID)
 	if err != nil {
+		if errors.Is(err, repository.ErrNotFound) {
+			return nil, util.NewAppError(404, constants.CodeNotFound, fmt.Sprintf("UserGarden[id=%d] not found", gardenID))
+		}
 		return nil, fmt.Errorf("user garden bind find: %w", err)
 	}
 	if item.UserID != userID {
 		return nil, util.NewAppError(403, constants.CodeForbidden, fmt.Sprintf("UserGarden[id=%d] bind failed: not owner", gardenID))
+	}
+	reminder, err := s.reminderRepo.FindByID(reminderID)
+	if err != nil {
+		if errors.Is(err, repository.ErrNotFound) {
+			return nil, util.NewAppError(404, constants.CodeNotFound, fmt.Sprintf("CareReminder[id=%d] not found", reminderID))
+		}
+		return nil, fmt.Errorf("user garden bind reminder find: %w", err)
+	}
+	if reminder.UserID != userID {
+		return nil, util.NewAppError(403, constants.CodeForbidden,
+			fmt.Sprintf("UserGarden[id=%d] bind failed: CareReminder[id=%d] user_id=%d not owner", gardenID, reminderID, userID))
 	}
 	item.CareReminderID = reminderID
 	if err := s.repo.Update(item); err != nil {

@@ -58,6 +58,16 @@ func (r *UserGardenRepository) Update(g *model.UserGarden) error {
 	return r.db.Save(g).Error
 }
 
+// TransferReminderTx rebinds the user's own garden items from one reminder to
+// another within an outer transaction. Garden items of other users are never
+// touched, so a reminder cycle cannot steal bindings that are not its own.
+func (r *UserGardenRepository) TransferReminderTx(tx *gorm.DB, userID, fromReminderID, toReminderID uint) (int64, error) {
+	res := tx.Model(&model.UserGarden{}).
+		Where("user_id = ? AND care_reminder_id = ?", userID, fromReminderID).
+		Update("care_reminder_id", toReminderID)
+	return res.RowsAffected, res.Error
+}
+
 // Delete removes a garden item by id.
 func (r *UserGardenRepository) Delete(id uint) error {
 	return r.db.Delete(&model.UserGarden{}, id).Error

@@ -30,6 +30,7 @@ const (
 	LogReminderCreateSuccess    = "care reminder created: task_title=%s"
 	LogReminderCreateFailed     = "care reminder create failed: task_title=%s"
 	LogReminderStatusChanged    = "care reminder status changed: id=%d status=%s"
+	LogReminderCycleNextCreated = "care reminder cycle next created: id=%d next_id=%d"
 	LogGardenAddSuccess         = "garden item added: plant_id=%d user_id=%d"
 	LogGardenAddFailed          = "garden item add failed: plant_id=%d user_id=%d"
 	LogQuestionCreateSuccess    = "question created: title=%s"
@@ -45,5 +46,5 @@ const (
 
 // LogTemplateCount returns the number of defined log templates (used by tests).
 func LogTemplateCount() int {
-	return 33
+	return 34
 }

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 
 	"github.com/gbplantwiki/gbplantwiki/internal/model"
 )
@@ -39,6 +40,29 @@ func (r *CareReminderRepository) FindByID(id uint) (*model.CareReminder, error) 
 // Update persists a reminder.
 func (r *CareReminderRepository) Update(m *model.CareReminder) error {
 	return r.db.Save(m).Error
+}
+
+// FindByIDForUpdateTx locates a reminder within an outer transaction and locks
+// the row so concurrent completions of the same reminder are serialized.
+func (r *CareReminderRepository) FindByIDForUpdateTx(tx *gorm.DB, id uint) (*model.CareReminder, error) {
+	var m model.CareReminder
+	if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&m, id).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrNotFound
+		}
+		return nil, err
+	}
+	return &m, nil
+}
+
+// CreateTx inserts a reminder within an outer transaction.
+func (r *CareReminderRepository) CreateTx(tx *gorm.DB, m *model.CareReminder) error {
+	return tx.Create(m).Error
+}
+
+// UpdateTx persists a reminder within an outer transaction.
+func (r *CareReminderRepository) UpdateTx(tx *gorm.DB, m *model.CareReminder) error {
+	return tx.Save(m).Error
 }
 
 // Delete removes a reminder.

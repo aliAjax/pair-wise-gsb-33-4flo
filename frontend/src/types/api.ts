@@ -30,6 +30,7 @@ export interface CareReminder {
   remind_date: string
   frequency: string
   status: 'pending' | 'done' | 'overdue'
+  next_reminder_id: number
   created_at: string
 }
 
