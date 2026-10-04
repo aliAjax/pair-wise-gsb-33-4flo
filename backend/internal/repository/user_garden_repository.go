@@ -71,3 +71,13 @@ func (r *UserGardenRepository) ListByUser(userID uint) ([]model.UserGarden, erro
 	}
 	return items, nil
 }
+
+// RebindReminderTx moves every garden entry bound to fromReminderID onto
+// toReminderID inside a transaction, keeping the "my garden" link alive
+// across the care cycle. It returns the number of moved entries.
+func (r *UserGardenRepository) RebindReminderTx(tx *gorm.DB, userID, fromReminderID, toReminderID uint) (int64, error) {
+	res := tx.Model(&model.UserGarden{}).
+		Where("user_id = ? AND care_reminder_id = ?", userID, fromReminderID).
+		Update("care_reminder_id", toReminderID)
+	return res.RowsAffected, res.Error
+}

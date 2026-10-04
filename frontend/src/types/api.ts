@@ -30,7 +30,17 @@ export interface CareReminder {
   remind_date: string
   frequency: string
   status: 'pending' | 'done' | 'overdue'
+  next_reminder_id: number
   created_at: string
+}
+
+// Result of completing/renewing a reminder: the source reminder, the single
+// generated next-cycle reminder (null for one-off tasks) and how many garden
+// entries were moved onto it.
+export interface ReminderCycleResult {
+  reminder: CareReminder
+  next: CareReminder | null
+  rebound: number
 }
 
 export interface UserGarden {

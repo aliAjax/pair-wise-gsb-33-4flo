@@ -14,5 +14,6 @@ func registerReminderRoutes(v1 *gin.RouterGroup, cfg *config.Config, h *handler.
 	reminders.GET("/calendar", h.ListByMonth)
 	reminders.POST("", limiter.Limit(), h.Create)
 	reminders.PUT("/:id/status", h.UpdateStatus)
+	reminders.POST("/:id/renew", h.Renew)
 	reminders.DELETE("/:id", h.Delete)
 }

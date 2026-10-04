@@ -143,7 +143,8 @@ gb-61/
 | GET | /api/v1/reminders | 登录 | 当前用户提醒列表（自动标记逾期） |
 | GET | /api/v1/reminders/calendar | 登录 | 按月查询提醒 |
 | POST | /api/v1/reminders | 登录（限流） | 创建养护提醒 |
-| PUT | /api/v1/reminders/:id/status | 登录 | 状态流转 pending/done |
+| PUT | /api/v1/reminders/:id/status | 登录 | 状态流转 pending/done；done 时按频率为同一植株生成下一次提醒（幂等，重复/并发只落一条），并把绑定的花园条目转到新提醒 |
+| POST | /api/v1/reminders/:id/renew | 登录 | 按原提醒编号补生成/重试下一次提醒（幂等） |
 | DELETE | /api/v1/reminders/:id | 登录 | 删除提醒 |
 | GET | /api/v1/favorites | 登录 | 收藏列表 |
 | POST | /api/v1/favorites | 登录（限流） | 添加收藏 |

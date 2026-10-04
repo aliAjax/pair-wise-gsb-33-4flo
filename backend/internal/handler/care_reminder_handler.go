@@ -81,12 +81,28 @@ func (h *CareReminderHandler) UpdateStatus(c *gin.Context) {
 		c.Error(util.NewAppError(http.StatusBadRequest, constants.CodeBadRequest, constants.MsgInvalidParam))
 		return
 	}
-	m, err := h.svc.UpdateStatus(middleware.GetUserID(c), uint(id), req.Status)
+	result, err := h.svc.UpdateStatus(middleware.GetUserID(c), uint(id), req.Status)
 	if err != nil {
 		c.Error(err)
 		return
 	}
-	c.JSON(http.StatusOK, dto.OK(m))
+	c.JSON(http.StatusOK, dto.OK(result))
+}
+
+// Renew handles POST /reminders/:id/renew: retry generating the next cycle for
+// a completed reminder by its original id.
+func (h *CareReminderHandler) Renew(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		c.Error(util.NewAppError(http.StatusBadRequest, constants.CodeBadRequest, "invalid reminder id"))
+		return
+	}
+	result, err := h.svc.Renew(middleware.GetUserID(c), uint(id))
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, dto.OK(result))
 }
 
 // Delete handles DELETE /reminders/:id.

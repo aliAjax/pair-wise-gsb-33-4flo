@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { listReminders, updateReminderStatus, createReminder } from '@/api/reminder'
-import type { CareReminder } from '@/types/api'
+import { listReminders, updateReminderStatus, createReminder, renewReminder } from '@/api/reminder'
+import type { CareReminder, ReminderCycleResult } from '@/types/api'
 
 export const useReminderStore = defineStore('reminder', () => {
   const reminders = ref<CareReminder[]>([])
@@ -15,10 +15,18 @@ export const useReminderStore = defineStore('reminder', () => {
     await load()
   }
 
-  async function setStatus(id: number, status: string) {
-    await updateReminderStatus(id, status)
+  async function setStatus(id: number, status: string): Promise<ReminderCycleResult> {
+    const result = await updateReminderStatus(id, status)
     await load()
+    return result
   }
 
-  return { reminders, load, create, setStatus }
+  // Retry next-cycle generation for a completed reminder by its original id.
+  async function renew(id: number): Promise<ReminderCycleResult> {
+    const result = await renewReminder(id)
+    await load()
+    return result
+  }
+
+  return { reminders, load, create, setStatus, renew }
 })
